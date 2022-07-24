@@ -10,7 +10,7 @@ from prefect_metricflow.exceptions import MetricFlowFailureException
 from prefect_metricflow.tasks import materialize
 
 
-@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir"})
+@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir/with_config"})
 @mock.patch("metricflow.api.metricflow_client.MetricFlowClient")
 def test_materialize_success_with_config(mf_client_mock):
     class MetricFlowClientMock:
@@ -43,11 +43,10 @@ def test_materialize_success_with_config(mf_client_mock):
         )
 
     response = test_flow()
-
     assert response == SqlTable(db_name="foo", schema_name="foo", table_name="foo")
 
 
-@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir"})
+@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir/with_yaml_config"})
 @mock.patch("metricflow.api.metricflow_client.MetricFlowClient")
 def test_materialize_success_with_yaml_config(mf_client_mock):
     class MetricFlowClientMock:
@@ -63,7 +62,7 @@ def test_materialize_success_with_yaml_config(mf_client_mock):
 
     mf_client_mock.return_value = MetricFlowClientMock
 
-    @flow(name="test_flow_2")
+    @flow(name="test_flow_3")
     def test_flow():
         return materialize(
             materialization_name="foo",
@@ -84,7 +83,7 @@ def test_materialize_success_with_yaml_config(mf_client_mock):
     assert response == SqlTable(db_name="foo", schema_name="foo", table_name="foo")
 
 
-@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir"})
+@mock.patch.dict(os.environ, {"MF_CONFIG_DIR": "/tmp/mf_config_dir/failure"})
 @mock.patch("metricflow.api.metricflow_client.MetricFlowClient")
 def test_materialize_failure(mf_client_mock):
     class MetricFlowClientMock:
@@ -103,7 +102,7 @@ def test_materialize_failure(mf_client_mock):
     msg = "Cannot build materialization!"
     mf_client_mock.side_effect = MetricFlowFailureException(msg)
 
-    @flow(name="test_flow_3")
+    @flow(name="test_flow_4")
     def test_flow():
         return materialize(
             materialization_name="foo",
