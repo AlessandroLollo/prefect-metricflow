@@ -27,15 +27,25 @@ pip install prefect-metricflow
 ```python
 from prefect import flow
 from prefect_metricflow.tasks import (
-    goodbye_prefect_metricflow,
-    hello_prefect_metricflow,
+    materialize
 )
 
 
 @flow
 def example_flow():
-    hello_prefect_metricflow
-    goodbye_prefect_metricflow
+    return materialize(
+        materialization_name="my_materialization",
+        config={
+            "dwh_dialect": "redshift",
+            "dwh_host": "host",
+            "dwh_port": 5439,
+            "dwh_user": "dw_user",
+            "dwh_password": "dw_pwd",
+            "dwh_database": "dw_db",
+            "dwh_schema": "dw_schema",
+            "model_path": "path/to/models",
+        }
+    )
 
 example_flow()
 ```
