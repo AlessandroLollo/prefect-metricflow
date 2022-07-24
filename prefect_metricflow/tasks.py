@@ -1,24 +1,55 @@
-"""This is an example tasks module"""
+"""
+Collections of tasks to interact with MetricFlow
+"""
+from typing import Dict, Optional, Union
+
+from metricflow.api.metricflow_client import MetricFlowClient
+from metricflow.dataflow.sql_table import SqlTable
 from prefect import task
 
-
-@task
-def hello_prefect_metricflow() -> str:
-    """
-    Sample task that says hello!
-
-    Returns:
-        A greeting for your collection
-    """
-    return "Hello, prefect-metricflow!"
+from prefect_metricflow.utils import get_config_file_path, persist_config
 
 
 @task
-def goodbye_prefect_metricflow() -> str:
+def materialize(
+    materialization_name: str,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    config: Optional[Union[Dict, str]] = None,
+    config_file_path: Optional[str] = None,
+) -> SqlTable:
     """
-    Sample task that says goodbye!
+    Materialize metrics on the target DWH.
+
+    Args:
+        materialization_name: The name of the materialization to be created.
+        start_time: The start time range to be used to build the materialization.
+        end_time: The end time range to be used to build the materialization.
+        config: MetricFlow configuration. Can be either a `dict` or a YAML string.
+            If provided, will be persisted at the path specified in `config_file_path`.
+        config_file_path: Path to MetricFlow config file.
+            If not provided, the default path will be used.
+
+    Raises:
+        `MetricFlowFailureException` if `config` is not a valid YAML string.
 
     Returns:
-        A farewell for your collection
+        a SqlTable with references to the newly created materialization.
     """
-    return "Goodbye, prefect-metricflow!"
+
+    mf_config_file_path = get_config_file_path(config_file_path=config_file_path)
+
+    # If a config is provided, try to use it.
+    if config:
+
+        persist_config(config=config, file_path=mf_config_file_path)
+
+    # Create MetricFlow client
+    mfc = MetricFlowClient.from_config(config_file_path=mf_config_file_path)
+
+    # Build materialization and return result
+    return mfc.materialize(
+        materialization_name=materialization_name,
+        start_time=start_time,
+        end_time=end_time,
+    )
