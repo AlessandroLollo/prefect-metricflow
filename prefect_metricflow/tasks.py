@@ -53,3 +53,38 @@ def materialize(
         start_time=start_time,
         end_time=end_time,
     )
+
+
+@task
+def drop_materialization(
+    materialization_name: str,
+    config: Optional[Union[Dict, str]] = None,
+    config_file_path: Optional[str] = None,
+) -> bool:
+    """
+    Drop a materialization that was previously created by MetricFlow.
+
+    Args:
+        materialization_name: The name of the materialization to drop.
+        config: MetricFlow configuration. Can be either a `dict` or a YAML string.
+            If provided, will be persisted at the path specified in `config_file_path`.
+        config_file_path: Path to MetricFlow config file.
+            If not provided, the default path will be used.
+
+    Returns:
+        `True` if MetricFlow has successfully dropped the materialization table,
+        `False` if the materialization table does not exist.
+    """
+
+    mf_config_file_path = get_config_file_path(config_file_path=config_file_path)
+
+    # If a config is provided, try to use it.
+    if config:
+
+        persist_config(config=config, file_path=mf_config_file_path)
+
+    # Create MetricFlow client
+    mfc = MetricFlowClient.from_config(config_file_path=mf_config_file_path)
+
+    # Build materialization and return result
+    return mfc.drop_materialization(materialization_name=materialization_name)
