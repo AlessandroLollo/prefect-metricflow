@@ -32,7 +32,7 @@ from prefect_metricflow.tasks import (
 
 
 @flow
-def example_flow():
+def create_materialization_with_metricflow():
     return materialize(
         materialization_name="my_materialization",
         config={
@@ -47,7 +47,26 @@ def example_flow():
         }
     )
 
-example_flow()
+create_materialization_with_metricflow()
+
+
+@flow
+def drop_materialization_with_metricflow():
+    return drop_materialization(
+        materialization_name="my_materialization",
+        config={
+            "dwh_dialect": "redshift",
+            "dwh_host": "host",
+            "dwh_port": 5439,
+            "dwh_user": "dw_user",
+            "dwh_password": "dw_pwd",
+            "dwh_database": "dw_db",
+            "dwh_schema": "dw_schema",
+            "model_path": "path/to/models",
+        }
+    )
+
+drop_materialization_with_metricflow()
 ```
 
 ## Resources
